@@ -2,26 +2,68 @@ package main
 
 import (
 	"fmt"
-	"github.com/mingcheng/ncmdump.go"
+	"github.com/mingcheng/ncmdump"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
-func processFile(name string) {
+func processFile(name string) error {
+	name, err := filepath.Abs(name)
+	if err != nil {
+		return err
+	}
+
 	fp, err := os.Open(name)
 	if err != nil {
 		log.Println(err)
-		return
+		return err
 	}
 	defer fp.Close()
 
-	if meta, err := ncmdump.DumpMeta(fp); err != nil {
-		log.Fatal(err)
-	} else {
-		fmt.Printf("%s: %s\n", name, meta.Format)
+	meta, err := ncmdump.DumpMeta(fp)
+	if err != nil {
+		return err
 	}
+
+	data, err := ncmdump.Dump(fp)
+	if err != nil {
+		return err
+	}
+
+	outputFilePath := fmt.Sprintf("%s.%s",
+		strings.TrimSuffix(filepath.Base(name), filepath.Ext(name)), meta.Format)
+	outputFilePath = filepath.Join(filepath.Dir(name), outputFilePath)
+
+	if err := ioutil.WriteFile(outputFilePath, data, 0644); err != nil {
+		return err
+	}
+
+	if err := addMeta(outputFilePath, meta); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// addMeta to update music file meta from dumped data
+func addMeta(musicFile string, meta ncmdump.Meta) error {
+	switch strings.ToLower(meta.Format) {
+	case "mp3":
+		modifier := MP3{
+			FilePath: musicFile,
+			Meta:     meta,
+		}
+
+		return modifier.Update()
+
+	default:
+		return fmt.Errorf("unknown format %s", meta.Format)
+	}
+
+	return nil
 }
 
 func main() {
