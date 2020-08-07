@@ -5,7 +5,7 @@
 - [简介](#简介)
 - [格式分析](#格式分析)
 - [如何使用？](#如何使用)
-    - [Windows 可执行文件调用](#windows-可执行文件调用)
+    - [Windows 下调用](#windows-下调用)
 - [已知问题](#已知问题)
 - [相关链接](#相关链接)
 
@@ -13,7 +13,9 @@
 
 ## 简介
 
-用于导出网易云音乐 NCM 格式的相关内容，本项目完全参考 [anonymous5l/ncmdump](https://github.com/anonymous5l/ncmdump)，并使用 golang 实现，起初是为了能在 Windows 下快速编译和运行。
+我们从网易云音乐下载到本地的歌曲，有些往往不是 mp3 或者 flac 等普通的音频格式、往往是 NCM 格式，这是因为云音乐对于版权方面顾虑的保护措施。但对于我们这些即便是付费用户而言，想要从云音乐下载的歌曲到第三方软件播放，这也是一件非常困扰的事情。
+
+所以就有了这个项目用于导出网易云音乐 NCM 格式的相关内容，本项目完全参考 [anonymous5l/ncmdump](https://github.com/anonymous5l/ncmdump)，并使用 golang 实现，起初是为了能在 Windows 下快速编译和运行。
 
 ## 格式分析
 
@@ -57,7 +59,7 @@ if meta, err := ncmdump.DumpMeta(fp); err != nil {
 
 顺便提一句，为了转换以及处理方便，使用 `ncmdump.Dump(fp)` 会将已经解出来的原音乐格式放入内存中，如果想直接写入文件建议修改 writer 的指向即可。
 
-### Windows 可执行文件调用
+### Windows 下调用
 
 Windows 下使用本程序很简单，只需要将对应的 NCM 文件或者包含 NCM 文件的文件夹拉到对应的 EXE 可执行文件即可。如图：
 
