@@ -10,7 +10,8 @@ import (
 	"strings"
 )
 
-func processFile(name string) error {
+// process file with path and return error if exists
+func process(name string) error {
 	name, err := filepath.Abs(name)
 	if err != nil {
 		return err
@@ -66,6 +67,7 @@ func addMeta(musicFile string, meta ncmdump.Meta) error {
 	return nil
 }
 
+// main function
 func main() {
 	argc := len(os.Args)
 	if argc <= 1 {
@@ -74,16 +76,17 @@ func main() {
 	}
 	files := make([]string, 0)
 
+	// read files from single file or specified directory
 	for i := 0; i < argc-1; i++ {
 		path := os.Args[i+1]
 		if info, err := os.Stat(path); err != nil {
 			log.Fatalf("Path %s does not exist.", info)
 		} else if info.IsDir() {
-			filelist, err := ioutil.ReadDir(path)
+			fileset, err := ioutil.ReadDir(path)
 			if err != nil {
 				log.Fatalf("Error while reading %s: %s", path, err.Error())
 			}
-			for _, f := range filelist {
+			for _, f := range fileset {
 				files = append(files, filepath.Join(path, "./", f.Name()))
 			}
 		} else {
@@ -91,9 +94,14 @@ func main() {
 		}
 	}
 
+	// process file
 	for _, filename := range files {
 		if filepath.Ext(filename) == ".ncm" {
-			processFile(filename)
+			if err := process(filename); err != nil {
+				log.Fatal(err)
+			} else {
+				log.Printf("%s done", filename)
+			}
 		}
 	}
 }
